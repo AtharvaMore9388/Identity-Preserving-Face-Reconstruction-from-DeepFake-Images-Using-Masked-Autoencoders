@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="DeepShield AI — Enterprise deepfake detection and identity recovery using Grad-CAM guided inpainting with NbNet reconstruction.">
+    <meta name="theme-color" content="#6366f1">
+    <meta property="og:title" content="DeepShield AI — Deepfake Detection & Identity Recovery">
+    <meta property="og:description" content="Detect deepfakes with ResNeXt+LSTM and recover manipulated regions with identity-preserving NbNet inpainting.">
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-family='Arial,sans-serif' font-size='16' font-weight='900' fill='white'%3EDS%3C/text%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%236366f1'/%3E%3Cstop offset='100%25' stop-color='%23a855f7'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E">
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+          integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+          crossorigin="anonymous" referrerpolicy="no-referrer">
+
+    <!-- Fonts: Inter (body) + Fira Code (terminal) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="/static/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/jquery-ui.css">
+
+    <!-- App CSS -->
+    <link rel="stylesheet" href="{% static 'css/styles.css'%}">
+
+    <title>DeepShield AI — Deepfake Detection & Recovery</title>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <!-- Animated background orbs -->
+    <div class="animated-orbs" aria-hidden="true">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    {%include 'nav-bar.html'%}
+
+    {%block content%}{%endblock%}
+
+    <!-- Image lightbox -->
+    <div class="lightbox" id="imageLightbox" role="dialog" aria-modal="true" aria-label="Image preview">
+        <button type="button" class="lightbox-close" aria-label="Close preview" onclick="document.getElementById('imageLightbox').classList.remove('active')">
+            <i class="fas fa-times"></i>
+        </button>
+        <img src="" alt="Full preview" id="lightboxImg">
+    </div>
+
+    <!-- jQuery -->
+    <script src="/static/js/jquery-3.5.0.min.js"></script>
+    <script src="/static/js/popper.min.js"></script>
+    <script src="/static/js/jquery-ui.min.js"></script>
+
+    <script>
+        // Animated confidence bar fill
+        document.addEventListener('DOMContentLoaded', function () {
+            const bars = document.querySelectorAll('.confidence-bar-inner[data-width]');
+            bars.forEach(b => {
+                requestAnimationFrame(() => {
+                    setTimeout(() => { b.style.width = b.dataset.width + '%'; }, 150);
+                });
+            });
+
+            // SVG gauge ring animation
+            const rings = document.querySelectorAll('.gauge-circle-fg[data-progress]');
+            rings.forEach(r => {
+                const radius = 50;
+                const circumference = 2 * Math.PI * radius;
+                const progress = Math.min(1, Math.max(0, parseFloat(r.dataset.progress) || 0));
+                r.style.strokeDasharray = circumference.toFixed(2);
+                r.style.strokeDashoffset = circumference.toFixed(2);
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        r.style.strokeDashoffset = (circumference * (1 - progress)).toFixed(2);
+                    }, 250);
+                });
+            });
+
+            // Image tile → lightbox
+            document.querySelectorAll('[data-lightbox-src]').forEach(el => {
+                el.addEventListener('click', function (ev) {
+                    ev.preventDefault();
+                    const src = this.dataset.lightboxSrc || this.querySelector('img').src;
+                    if (!src) return;
+                    document.getElementById('lightboxImg').src = src;
+                    document.getElementById('imageLightbox').classList.add('active');
+                });
+            });
+
+            // Close lightbox on backdrop click
+            const lb = document.getElementById('imageLightbox');
+            if (lb) {
+                lb.addEventListener('click', function (e) {
+                    if (e.target === lb) lb.classList.remove('active');
+                });
+            }
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && lb && lb.classList.contains('active')) {
+                    lb.classList.remove('active');
+                }
+            });
+
+            // Navbar scroll effect
+            const nav = document.querySelector('.navbar');
+            if (nav) {
+                const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 10);
+                onScroll();
+                window.addEventListener('scroll', onScroll, { passive: true });
+            }
+        });
+    </script>
+
+    {%block js_cripts%}{%endblock%}
+    {%include 'footer.html'%}
+</body>
+</html>

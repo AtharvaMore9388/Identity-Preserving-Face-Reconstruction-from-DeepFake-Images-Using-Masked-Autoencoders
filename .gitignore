@@ -1,0 +1,73 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual Environments
+.venv/
+venv/
+venv_django/
+env/
+ENV/
+
+# Django
+*.sqlite3
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Model weights (large binary files)
+*.h5
+*.pt
+*.pth
+*.pkl
+*.onnx
+deep_pro/deepfake_vid/Deepfake_detection_using_deep_learning-master/Django\ Application/models/*
+!deep_pro/deepfake_vid/Deepfake_detection_using_deep_learning-master/Django\ Application/models/Readme.txt
+
+# Uploaded media (user-generated content)
+deep_pro/deepfake_vid/Deepfake_detection_using_deep_learning-master/Django\ Application/uploaded_images/*
+!deep_pro/deepfake_vid/Deepfake_detection_using_deep_learning-master/Django\ Application/uploaded_images/Readme.txt
+deep_pro/deepfake_vid/Deepfake_detection_using_deep_learning-master/Django\ Application/uploaded_videos/*
+!deep_pro/deepfake_vid/Deepfake_detection_using_deep_learning-master/Django\ Application/uploaded_videos/Readme.txt
+
+# Temporary / scratch files
+*.log
+*.txt.bak
+_bg_server.log
+_child_win32.log
+_chk_rec*.py
+_deepshield_out.log
+_dep_report.log
+_final.log
+_full_check.log
+_rec_check.log
+_server_keep.log
+_svc*.log
+_torch_check.log
+check_server_result.txt
+deep_pro/pipeline_log.txt
+deep_pro/_test_log.txt
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.vs/
+.idea/
+*.suo
+*.user
+
+# Byte-compiled
+*.pyc
+*.pyo
