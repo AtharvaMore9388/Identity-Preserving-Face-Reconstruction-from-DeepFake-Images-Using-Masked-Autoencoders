@@ -8,6 +8,7 @@ class MaskGenerator:
     connected-component speckle removal."""
 
     @staticmethod
+    
     def to_binary(heatmap_norm,
                   method='otsu',
                   threshold=0.5,
