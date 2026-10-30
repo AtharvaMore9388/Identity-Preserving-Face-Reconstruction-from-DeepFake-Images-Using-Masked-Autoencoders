@@ -1,15 +1,16 @@
 @echo off
 chcp 65001 >nul
-title DeepShield AI - Deepfake Detection Server
-cd /d "d:\Atharvac++\deep_next\deep_pro\deepfake_vid\Deepfake_detection_using_deep_learning-master\Django Application"
+title DeepFake Reconstruction & Detection System
+cd /d "%~dp0deepfake_reconstruction"
 echo.
 echo ============================================================
-echo   DEEPSHIELD AI SERVER
+echo   DEEPFAKE RECONSTRUCTION & DETECTION SYSTEM
+echo   Identity-Preserving Face Reconstruction using MAE
 echo   Serving on: http://127.0.0.1:8000/
 echo   Press Ctrl+C to stop.
 echo ============================================================
 echo.
-python manage.py runserver 0.0.0.0:8000 --noreload
+python manage.py runserver 127.0.0.1:8000
 echo.
 echo Server stopped.
 pause

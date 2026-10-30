@@ -1,0 +1,427 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="DeepShield AI — Login or create an account to access deepfake detection.">
+    <title>DeepShield AI — {% if tab == 'register' %}Create Account{% else %}Sign In{% endif %}</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --indigo:  #6366f1;
+            --purple:  #a855f7;
+            --pink:    #ec4899;
+            --bg:      #050510;
+            --border:  rgba(255,255,255,0.10);
+            --text:    #e2e8f0;
+            --muted:   #94a3b8;
+            --danger:  #f87171;
+        }
+
+        html, body {
+            min-height: 100%;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .auth-bg {
+            position: fixed; inset: 0; z-index: 0;
+            background:
+                radial-gradient(ellipse at 15% 15%, rgba(99,102,241,0.20) 0%, transparent 55%),
+                radial-gradient(ellipse at 85% 85%, rgba(168,85,247,0.20) 0%, transparent 55%),
+                #050510;
+        }
+        .auth-bg::before {
+            content: '';
+            position: absolute;
+            width: 560px; height: 560px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(99,102,241,0.13), transparent 70%);
+            top: -180px; left: -180px;
+            animation: orb1 13s ease-in-out infinite alternate;
+        }
+        .auth-bg::after {
+            content: '';
+            position: absolute;
+            width: 480px; height: 480px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(168,85,247,0.13), transparent 70%);
+            bottom: -140px; right: -140px;
+            animation: orb2 10s ease-in-out infinite alternate;
+        }
+        @keyframes orb1 { to { transform: translate(55px, 38px) scale(1.14); } }
+        @keyframes orb2 { to { transform: translate(-45px, -28px) scale(1.11); } }
+
+        .auth-wrapper {
+            position: relative; z-index: 1;
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .auth-card {
+            width: 100%; max-width: 460px;
+            background: rgba(255,255,255,0.045);
+            backdrop-filter: blur(22px) saturate(140%);
+            -webkit-backdrop-filter: blur(22px) saturate(140%);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            box-shadow: 0 0 40px rgba(99,102,241,0.28), 0 24px 60px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        .auth-logo {
+            display: flex; align-items: center; gap: 12px;
+            justify-content: center;
+            padding: 2.2rem 2rem 1.4rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .logo-badge {
+            width: 44px; height: 44px; border-radius: 10px;
+            background: linear-gradient(135deg, var(--indigo), var(--purple));
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 1rem; color: #fff;
+            box-shadow: 0 4px 18px rgba(99,102,241,0.50);
+        }
+        .logo-text {
+            font-size: 1.25rem; font-weight: 800;
+            background: linear-gradient(90deg, var(--indigo), var(--purple), var(--pink));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .auth-tabs {
+            display: grid; grid-template-columns: 1fr 1fr;
+            padding: 1.2rem 2rem 0; gap: 8px;
+        }
+        .tab-btn {
+            padding: 0.65rem 1rem;
+            border: 1px solid transparent; border-radius: 12px;
+            background: transparent; color: var(--muted);
+            font-family: inherit; font-size: 0.9rem; font-weight: 600;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            transition: all 0.22s ease;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, rgba(99,102,241,0.22), rgba(168,85,247,0.22));
+            border-color: rgba(99,102,241,0.45);
+            color: #c7d2fe;
+        }
+        .tab-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.06);
+            color: var(--text);
+        }
+
+        .auth-forms { padding: 1.6rem 2rem 2rem; }
+        .auth-form { display: none; }
+        .auth-form.visible { display: block; animation: fadein 0.28s ease; }
+        @keyframes fadein {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.3rem; }
+        .form-sub { font-size: 0.84rem; color: var(--muted); margin-bottom: 1.5rem; }
+
+        .field { margin-bottom: 1.15rem; }
+        .field label {
+            display: block;
+            font-size: 0.8rem; font-weight: 600; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 0.04em;
+            margin-bottom: 6px;
+        }
+        .fw { position: relative; }
+        .fw .fi {
+            position: absolute; left: 14px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted); font-size: 0.88rem;
+            pointer-events: none;
+        }
+        .fw input {
+            width: 100%;
+            padding: 0.72rem 2.5rem 0.72rem 2.6rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border); border-radius: 12px;
+            color: var(--text); font-family: inherit; font-size: 0.93rem;
+            outline: none;
+            transition: border-color 0.22s, box-shadow 0.22s, background 0.22s;
+        }
+        .fw input::placeholder { color: #475569; }
+        .fw input:focus {
+            border-color: var(--indigo);
+            background: rgba(99,102,241,0.08);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.16);
+        }
+        .fw input.err {
+            border-color: var(--danger);
+            background: rgba(248,113,113,0.06);
+        }
+        .tpw {
+            position: absolute; right: 12px; top: 50%;
+            transform: translateY(-50%);
+            background: none; border: none;
+            color: var(--muted); cursor: pointer; font-size: 0.88rem; padding: 0;
+        }
+        .tpw:hover { color: var(--text); }
+
+        .ferr {
+            font-size: 0.77rem; color: var(--danger);
+            margin-top: 4px;
+            display: flex; align-items: center; gap: 5px;
+        }
+        .fhint { font-size: 0.75rem; color: #475569; margin-top: 3px; }
+
+        .alert-err {
+            background: rgba(248,113,113,0.12);
+            border: 1px solid rgba(248,113,113,0.35);
+            border-radius: 10px; padding: 0.7rem 1rem;
+            font-size: 0.84rem; color: var(--danger);
+            margin-bottom: 1.2rem;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .auth-btn {
+            width: 100%; padding: 0.82rem;
+            background: linear-gradient(135deg, var(--indigo), var(--purple));
+            border: none; border-radius: 12px;
+            color: #fff; font-family: inherit;
+            font-size: 0.95rem; font-weight: 700;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            box-shadow: 0 4px 20px rgba(99,102,241,0.40);
+            margin-top: 0.5rem;
+            transition: transform 0.18s, box-shadow 0.18s, filter 0.18s;
+        }
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(99,102,241,0.55);
+            filter: brightness(1.08);
+        }
+        .auth-btn:active { transform: translateY(0); }
+
+        .switch-link {
+            text-align: center; font-size: 0.84rem; color: var(--muted);
+            margin-top: 1.3rem;
+        }
+        .switch-link a { color: #a5b4fc; font-weight: 600; text-decoration: none; }
+        .switch-link a:hover { color: var(--purple); }
+
+        .pw-bar { margin-top: 6px; height: 4px; border-radius: 4px; background: rgba(255,255,255,0.08); overflow: hidden; }
+        .pw-fill { height: 100%; border-radius: 4px; width: 0; transition: width 0.38s, background 0.38s; }
+    </style>
+</head>
+<body>
+<div class="auth-bg" aria-hidden="true"></div>
+
+<main class="auth-wrapper">
+    <div class="auth-card">
+
+        <div class="auth-logo">
+            <div class="logo-badge">DS</div>
+            <span class="logo-text">DeepShield AI</span>
+        </div>
+
+        <div class="auth-tabs" role="tablist">
+            <button class="tab-btn {% if tab == 'register' %}{% else %}active{% endif %}"
+                    id="tab-login-btn" role="tab" onclick="switchTab('login')">
+                <i class="fas fa-right-to-bracket"></i> Sign In
+            </button>
+            <button class="tab-btn {% if tab == 'register' %}active{% endif %}"
+                    id="tab-register-btn" role="tab" onclick="switchTab('register')">
+                <i class="fas fa-user-plus"></i> Register
+            </button>
+        </div>
+
+        <div class="auth-forms">
+
+            <!-- LOGIN -->
+            <form id="form-login" method="post" action="{% url 'ml_app:login' %}"
+                  class="auth-form {% if tab == 'register' %}{% else %}visible{% endif %}" novalidate>
+                {% csrf_token %}
+
+                <h1 class="form-title">Welcome back</h1>
+                <p class="form-sub">Sign in using your email address or display name.</p>
+
+                {% if errors.general %}
+                <div class="alert-err">
+                    <i class="fas fa-circle-exclamation"></i> {{ errors.general }}
+                </div>
+                {% endif %}
+
+                <div class="field">
+                    <label for="id_identifier">Email or Name</label>
+                    <div class="fw">
+                        <i class="fas fa-user fi"></i>
+                        <input type="text" id="id_identifier" name="identifier"
+                               autocomplete="username"
+                               placeholder="you@example.com  or  YourName"
+                               value="{{ form_data.identifier|default:'' }}"
+                               class="{% if errors.identifier %}err{% endif %}">
+                    </div>
+                    {% if errors.identifier %}
+                    <p class="ferr"><i class="fas fa-triangle-exclamation"></i> {{ errors.identifier }}</p>
+                    {% endif %}
+                    <p class="fhint">Enter your registered email address or your display name.</p>
+                </div>
+
+                <div class="field">
+                    <label for="id_login_pw">Password</label>
+                    <div class="fw">
+                        <i class="fas fa-lock fi"></i>
+                        <input type="password" id="id_login_pw" name="password"
+                               autocomplete="current-password" placeholder="Your password"
+                               class="{% if errors.password %}err{% endif %}">
+                        <button type="button" class="tpw" onclick="tpw('id_login_pw', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    {% if errors.password %}
+                    <p class="ferr"><i class="fas fa-triangle-exclamation"></i> {{ errors.password }}</p>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="auth-btn" id="login-submit-btn">
+                    <i class="fas fa-shield-halved"></i> Sign In to DeepShield
+                </button>
+                <p class="switch-link">
+                    Don't have an account?
+                    <a href="#" onclick="switchTab('register'); return false;" id="go-to-register">Create one free</a>
+                </p>
+            </form>
+
+            <!-- REGISTER -->
+            <form id="form-register" method="post" action="{% url 'ml_app:register' %}"
+                  class="auth-form {% if tab == 'register' %}visible{% endif %}" novalidate>
+                {% csrf_token %}
+
+                <h1 class="form-title">Create your account</h1>
+                <p class="form-sub">Join DeepShield AI — deepfake detection powered by deep learning.</p>
+
+                <div class="field">
+                    <label for="id_name">Display Name</label>
+                    <div class="fw">
+                        <i class="fas fa-id-badge fi"></i>
+                        <input type="text" id="id_name" name="name"
+                               autocomplete="name" placeholder="e.g. Atharva"
+                               value="{{ form_data.name|default:'' }}"
+                               class="{% if errors.name %}err{% endif %}" minlength="2">
+                    </div>
+                    {% if errors.name %}
+                    <p class="ferr"><i class="fas fa-triangle-exclamation"></i> {{ errors.name }}</p>
+                    {% endif %}
+                    <p class="fhint">You can also use this name to log in instead of email.</p>
+                </div>
+
+                <div class="field">
+                    <label for="id_email">Email Address</label>
+                    <div class="fw">
+                        <i class="fas fa-envelope fi"></i>
+                        <input type="email" id="id_email" name="email"
+                               autocomplete="email" placeholder="you@example.com"
+                               value="{{ form_data.email|default:'' }}"
+                               class="{% if errors.email %}err{% endif %}">
+                    </div>
+                    {% if errors.email %}
+                    <p class="ferr"><i class="fas fa-triangle-exclamation"></i> {{ errors.email }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label for="id_reg_pw">Password</label>
+                    <div class="fw">
+                        <i class="fas fa-lock fi"></i>
+                        <input type="password" id="id_reg_pw" name="password"
+                               autocomplete="new-password" placeholder="Min. 6 characters"
+                               class="{% if errors.password %}err{% endif %}"
+                               oninput="pwStr(this.value)" minlength="6">
+                        <button type="button" class="tpw" onclick="tpw('id_reg_pw', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    {% if errors.password %}
+                    <p class="ferr"><i class="fas fa-triangle-exclamation"></i> {{ errors.password }}</p>
+                    {% endif %}
+                    <div class="pw-bar"><div class="pw-fill" id="pw-fill"></div></div>
+                </div>
+
+                <div class="field">
+                    <label for="id_confirm_pw">Confirm Password</label>
+                    <div class="fw">
+                        <i class="fas fa-lock fi"></i>
+                        <input type="password" id="id_confirm_pw" name="confirm_password"
+                               autocomplete="new-password" placeholder="Repeat your password"
+                               class="{% if errors.confirm_password %}err{% endif %}">
+                        <button type="button" class="tpw" onclick="tpw('id_confirm_pw', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    {% if errors.confirm_password %}
+                    <p class="ferr"><i class="fas fa-triangle-exclamation"></i> {{ errors.confirm_password }}</p>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="auth-btn" id="register-submit-btn">
+                    <i class="fas fa-user-shield"></i> Create My Account
+                </button>
+                <p class="switch-link">
+                    Already have an account?
+                    <a href="#" onclick="switchTab('login'); return false;" id="go-to-login">Sign in</a>
+                </p>
+            </form>
+
+        </div>
+    </div>
+</main>
+
+<script>
+    function switchTab(t) {
+        var lf = document.getElementById('form-login');
+        var rf = document.getElementById('form-register');
+        var lb = document.getElementById('tab-login-btn');
+        var rb = document.getElementById('tab-register-btn');
+        if (t === 'login') {
+            lf.classList.add('visible');  rf.classList.remove('visible');
+            lb.classList.add('active');   rb.classList.remove('active');
+        } else {
+            rf.classList.add('visible');  lf.classList.remove('visible');
+            rb.classList.add('active');   lb.classList.remove('active');
+        }
+    }
+    function tpw(id, btn) {
+        var inp = document.getElementById(id);
+        var ic  = btn.querySelector('i');
+        if (inp.type === 'password') { inp.type = 'text'; ic.className = 'fas fa-eye-slash'; }
+        else { inp.type = 'password'; ic.className = 'fas fa-eye'; }
+    }
+    function pwStr(v) {
+        var bar = document.getElementById('pw-fill');
+        if (!bar) return;
+        var s = 0;
+        if (v.length >= 6)  s++;
+        if (v.length >= 10) s++;
+        if (/[A-Z]/.test(v)) s++;
+        if (/[0-9]/.test(v)) s++;
+        if (/[^A-Za-z0-9]/.test(v)) s++;
+        var w = ['0%','20%','40%','65%','85%','100%'];
+        var c = ['#f87171','#fb923c','#facc15','#34d399','#10b981'];
+        bar.style.width = w[s];
+        bar.style.background = c[Math.max(0, s - 1)];
+    }
+    var cpw = document.getElementById('id_confirm_pw');
+    if (cpw) {
+        cpw.addEventListener('input', function () {
+            var pw = document.getElementById('id_reg_pw').value;
+            this.classList.toggle('err', this.value.length > 0 && this.value !== pw);
+        });
+    }
+</script>
+</body>
+</html>
